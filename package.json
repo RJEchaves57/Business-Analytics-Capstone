@@ -1,0 +1,50 @@
+{
+  "name": "makoto-metal-operations",
+  "version": "2.0.0",
+  "private": true,
+  "description": "Internal operations system for Makoto Metal Technology, Inc. (MEPZ II) - TypeScript React + Vite UI, Express API.",
+  "type": "commonjs",
+  "main": "server-dist/server.js",
+  "scripts": {
+    "dev": "concurrently -k -n api,web -c yellow,cyan \"npm:dev:api\" \"npm:dev:web\"",
+    "dev:api": "tsx watch server.ts",
+    "dev:web": "vite",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "build": "npm run typecheck && vite build && npm run build:server",
+    "build:server": "tsc -p tsconfig.server.json",
+    "start": "node server-dist/server.js",
+    "preview": "vite preview",
+    "lint": "eslint .",
+    "reset": "tsx src/reset.ts",
+    "seed": "tsx src/reset.ts"
+  },
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "dependencies": {
+    "express": "^5.3.0",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "react-router-dom": "^7.18.5"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.5",
+    "@tailwindcss/vite": "^4.3.5",
+    "@types/express": "^5.0.6",
+    "@types/node": "^26.6.6",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^6.3.0",
+    "concurrently": "^10.0.7",
+    "eslint": "^9.39.5",
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "eslint-plugin-react-refresh": "^0.5.7",
+    "globals": "^17.14.0",
+    "tailwindcss": "^4.3.5",
+    "tsx": "^4.23.15",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.72.2",
+    "vite": "^8.3.7"
+  }
+}
