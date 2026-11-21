@@ -22,7 +22,7 @@ interface ApiRequest {
 }
 
 interface ApiResponse {
-  status(code: number): ApiResponse;
+  statusCode: number;
   setHeader(name: string, value: string | string[]): void;
   end(body?: unknown): void;
   once?(event: string, listener: () => void): void;
@@ -112,7 +112,7 @@ async function proxy(req: ApiRequest, res: ApiResponse): Promise<void> {
 
   try {
     const upstream = await fetch(target, { method, headers, body, redirect: 'manual' });
-    res.status(upstream.status);
+    res.statusCode = upstream.status;
     upstream.headers.forEach((value, key) => {
       const lower = key.toLowerCase();
       if (HOP_BY_HOP.has(lower) || lower === 'set-cookie') return;
@@ -125,16 +125,16 @@ async function proxy(req: ApiRequest, res: ApiResponse): Promise<void> {
     else res.end();
   } catch (error) {
     console.error('API proxy failed:', error);
-    res.status(502);
+    res.statusCode = 502;
     res.setHeader('content-type', 'application/json');
     res.end(JSON.stringify({ error: 'Backend is unavailable. Check BACKEND_URL.' }));
   }
 }
 
-export default async function handler(req: ApiRequest, res: ApiResponse): Promise<void> {
+async function handler(req: ApiRequest, res: ApiResponse): Promise<void> {
   const path = req.url || '/';
   if (path === '/api/health' || path === '/health') {
-    res.status(200);
+    res.statusCode = 200;
     res.setHeader('content-type', 'application/json');
     res.end(JSON.stringify({ ok: true, node: process.version, root: process.env.MAKOTO_ROOT || null }));
     return;
@@ -151,7 +151,7 @@ export default async function handler(req: ApiRequest, res: ApiResponse): Promis
     await runLocalApp(app, req, res);
   } catch (error) {
     console.error('Backend initialization failed:', error);
-    res.status(500);
+    res.statusCode = 500;
     res.setHeader('content-type', 'application/json');
     res.end(
       JSON.stringify({
@@ -160,3 +160,7 @@ export default async function handler(req: ApiRequest, res: ApiResponse): Promis
     );
   }
 }
+
+// Vercel writes this file as .js while package.json is CommonJS. Using
+// module.exports keeps the emitted function loadable by the Node runtime.
+module.exports = handler;
