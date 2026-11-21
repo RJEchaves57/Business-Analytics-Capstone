@@ -324,7 +324,7 @@ function seedSchedules(machines: number[]): number[] {
     [7, 'Shot blast media replenishment', 'Preventive', 45, 6, 'Benjie Ocampo'],
     [1, 'CNC axis backlash check', 'Calibration', 180, 12, 'Rodel Bautista'],
     [5, 'Press hydraulic pressure verification', 'Preventive', 30, 20, 'Joel Dagohoy'],
-    [10, 'CMM probe calibration', 'Calibration', 365, 28, 'Grace Villanueva'],
+    [10, 'CMM probe calibration', 'Calibration', 365, 28, 'Nicole Lauron'],
     [6, 'Welding robot torch cleaning', 'Preventive', 7, 40, 'Benjie Ocampo'],
     [11, 'TIG welder safety inspection', 'Inspection', 90, 55, 'Benjie Ocampo'],
   ];
