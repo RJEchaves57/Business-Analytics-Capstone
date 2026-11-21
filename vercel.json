@@ -4,6 +4,9 @@
   "buildCommand": "npm run build:web",
   "outputDirectory": "dist",
   "installCommand": "npm ci",
+  "env": {
+    "MAKOTO_ROOT": "/tmp"
+  },
   "functions": {
     "api/[...path].ts": {
       "maxDuration": 10

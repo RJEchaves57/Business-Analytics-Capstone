@@ -37,6 +37,7 @@ CREATE TABLE IF NOT EXISTS users (
   role TEXT NOT NULL DEFAULT 'user' CHECK (role IN ('admin','manager','maintenance','user','staff','viewer')),
   department TEXT,
   active INTEGER NOT NULL DEFAULT 1,
+  session_version INTEGER NOT NULL DEFAULT 0,
   last_login TEXT,
   created_at TEXT NOT NULL DEFAULT (datetime('now','localtime'))
 );
@@ -270,19 +271,26 @@ export function migrate(): void {
         role TEXT NOT NULL DEFAULT 'user' CHECK (role IN ('admin','manager','maintenance','user','staff','viewer')),
         department TEXT,
         active INTEGER NOT NULL DEFAULT 1,
+        session_version INTEGER NOT NULL DEFAULT 0,
         last_login TEXT,
         created_at TEXT NOT NULL DEFAULT (datetime('now','localtime'))
       );
-      INSERT INTO users_new (id, username, password_hash, full_name, role, department, active, last_login, created_at)
+      INSERT INTO users_new (id, username, password_hash, full_name, role, department, active, session_version, last_login, created_at)
       SELECT id, username, password_hash, full_name,
              CASE role WHEN 'staff' THEN 'maintenance' WHEN 'viewer' THEN 'user' ELSE role END,
-             department, active, last_login, created_at
+             department, active, 0, last_login, created_at
       FROM users;
       DROP TABLE users;
       ALTER TABLE users_new RENAME TO users;
       COMMIT;
       PRAGMA foreign_keys = ON;
     `);
+  }
+
+  // Databases created before stateless sessions need the version column.
+  const columns = db.prepare('PRAGMA table_info(users)').all() as Array<{ name?: string }>;
+  if (!columns.some((column) => column.name === 'session_version')) {
+    db.exec('ALTER TABLE users ADD COLUMN session_version INTEGER NOT NULL DEFAULT 0');
   }
 }
 

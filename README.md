@@ -191,15 +191,18 @@ Report pages include a print header and footer from the company settings. Use th
 
 ## Vercel deployment
 
-Vercel hosts the **React frontend only**. The Express/SQLite backend is kept intact and runs on a normal Node host (Render, Railway, VPS, etc.). This avoids the common conflict where Vercel tries to treat the Express server as a static app or expects a persistent local SQLite file.
+Vercel builds **only the React frontend**. The Express/SQLite backend is never removed; `api/[...path].ts` is the single API entry point, so Vercel and the Node server cannot fight over the build.
 
-`vercel.json` builds with `npm run build:web` and outputs `dist/`. The file `api/[...path].ts` is a thin proxy: the browser still calls same-origin `/api/...`, and the proxy forwards each request to `${BACKEND_URL}/api/...`. Cookies are passed through, so sessions work without CORS changes.
+Two modes are supported:
 
-Steps:
+1. **All-in-one demo (default).** `api/[...path].ts` runs the unchanged Express app inside the Vercel function. `MAKOTO_ROOT=/tmp` keeps SQLite writes in Vercel's writable temp folder, and the demo data is seeded on cold start. Sessions are signed cookies with a database-backed version check, so sign-in survives cold starts and separate instances. Data resets when Vercel recycles the instance — fine for a capstone demo, not for real records.
+2. **Persistent backend (recommended for real use).** Set `BACKEND_URL` in Vercel to the base URL of an Express host (Render, Railway, VPS, etc.), for example `https://makoto-api.onrender.com`. The Vercel function then proxies `/api/...` to `${BACKEND_URL}/api/...` with cookies passed through, so the browser still makes same-origin calls and no CORS changes are needed.
 
-1. Deploy the backend unchanged on a Node host: `npm ci`, `npm run build:server`, `npm start` (set `HOST=0.0.0.0` and `PORT` as required). Note its public URL, for example `https://makoto-api.onrender.com`.
-2. In the Vercel project, add an environment variable named `BACKEND_URL` with that base URL. Do **not** include `/api`.
-3. Deploy the frontend from this repo. Vercel uses `npm run build:web` automatically.
-4. Open the Vercel URL, sign in with any of the demo accounts, and confirm the dashboard loads.
+`vercel.json` uses `npm run build:web` and outputs `dist/`. To deploy:
 
-Local development is unchanged: `npm run dev` still starts Express on port 3000 and Vite proxies `/api` to it.
+1. Import this GitHub repo in Vercel (or run `npx vercel --prod`).
+2. Add `SESSION_SECRET` to the Vercel project with a long random value.
+3. Optionally add `BACKEND_URL` for persistent data; omit it for the all-in-one demo.
+4. Open the Vercel URL and sign in with any demo account.
+
+Local development is unchanged: `npm run dev` starts Express on port 3000 and Vite proxies `/api` to it.

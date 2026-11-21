@@ -17,7 +17,7 @@ const INDEX_FILE = path.join(DIST_DIR, 'index.html');
 migrate();
 const seeded = seedIfEmpty();
 
-const app = express();
+export const app = express();
 app.disable('x-powered-by');
 app.use(express.json({ limit: '1mb' }));
 
@@ -107,30 +107,36 @@ app.use((error: HttpError, req: Request, res: Response, next: NextFunction) => {
   res.status(status).type('text/plain').send(message);
 });
 
-const server = app.listen(PORT, HOST, () => {
-  const line = '─'.repeat(58);
-  console.log(`\n  ${line}`);
-  console.log('  MAKOTO METAL TECHNOLOGY, INC.  ·  MEPZ II Operations');
-  console.log(`  ${line}`);
-  console.log(`  Express API running at  http://${HOST}:${PORT}`);
-  console.log(
-    `  React build:            ${fs.existsSync(INDEX_FILE) ? 'served from /dist' : 'not built — run npm run build'}`
-  );
-  if (seeded) {
-    console.log('  Demo data loaded.');
-    console.log('  Sign in with:      admin / admin123');
-    console.log('                     manager / manager123');
-    console.log('                     maintenance / maintenance123');
-    console.log('                     user / user123');
-  }
-  console.log('  Development UI:    http://localhost:5173 (npm run dev)');
-  console.log(`  ${line}\n`);
-});
+export default app;
 
-server.on('error', (error: NodeJS.ErrnoException) => {
-  if (error.code === 'EADDRINUSE') {
-    console.error(`Port ${PORT} is already in use. Set PORT to another value, e.g. PORT=3001 npm start.`);
-    process.exit(1);
-  }
-  throw error;
-});
+// Only listen when started directly with `npm start`. When imported by the
+// Vercel function, the Express app is exported instead of binding a port.
+if (!process.env.VERCEL && require.main === module) {
+  const server = app.listen(PORT, HOST, () => {
+    const line = '─'.repeat(58);
+    console.log(`\n  ${line}`);
+    console.log('  MAKOTO METAL TECHNOLOGY, INC.  ·  MEPZ II Operations');
+    console.log(`  ${line}`);
+    console.log(`  Express API running at  http://${HOST}:${PORT}`);
+    console.log(
+      `  React build:            ${fs.existsSync(INDEX_FILE) ? 'served from /dist' : 'not built — run npm run build'}`
+    );
+    if (seeded) {
+      console.log('  Demo data loaded.');
+      console.log('  Sign in with:      admin / admin123');
+      console.log('                     manager / manager123');
+      console.log('                     maintenance / maintenance123');
+      console.log('                     user / user123');
+    }
+    console.log('  Development UI:    http://localhost:5173 (npm run dev)');
+    console.log(`  ${line}\n`);
+  });
+
+  server.on('error', (error: NodeJS.ErrnoException) => {
+    if (error.code === 'EADDRINUSE') {
+      console.error(`Port ${PORT} is already in use. Set PORT to another value, e.g. PORT=3001 npm start.`);
+      process.exit(1);
+    }
+    throw error;
+  });
+}
