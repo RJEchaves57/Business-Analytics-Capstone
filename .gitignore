@@ -10,3 +10,4 @@ data/*.db-shm
 Thumbs.db
 server-dist/
 .vercel
+.env*
