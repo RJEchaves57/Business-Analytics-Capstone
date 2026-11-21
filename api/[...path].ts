@@ -350,6 +350,29 @@ async function handle(request: Request): Promise<Response> {
   }
 }
 
-// Vercel's Web Handler API uses a default `fetch` handler to serve every HTTP
-// method, including POST/PUT/PATCH/DELETE.
+// Vercel's build analyzer registers methods from named ESM exports. Keeping a
+// default `fetch` handler as well covers runtimes that support the universal
+// form, while the named exports make POST/PUT/PATCH/DELETE routable.
+export async function GET(request: Request): Promise<Response> {
+  return handle(request);
+}
+export async function HEAD(request: Request): Promise<Response> {
+  return handle(request);
+}
+export async function POST(request: Request): Promise<Response> {
+  return handle(request);
+}
+export async function PUT(request: Request): Promise<Response> {
+  return handle(request);
+}
+export async function PATCH(request: Request): Promise<Response> {
+  return handle(request);
+}
+export async function DELETE(request: Request): Promise<Response> {
+  return handle(request);
+}
+export async function OPTIONS(request: Request): Promise<Response> {
+  return handle(request);
+}
+
 export default { fetch: handle };
