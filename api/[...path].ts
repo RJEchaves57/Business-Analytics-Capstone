@@ -46,7 +46,14 @@ let localAppPromise: Promise<any> | null = null;
 
 function localApp(): Promise<any> {
   if (!localAppPromise) {
-    localAppPromise = import('../server').then((module) => module.default);
+    // Load the compiled CommonJS backend: Vercel bundles this file with the
+    // function via `includeFiles`, while raw TypeScript source is not included.
+    // @ts-expect-error Compiled backend has no TypeScript declaration file.
+    localAppPromise = import('../server-dist/server.js').then((module: any) => {
+      const app = module.app || module.default?.app || module.default?.default || module.default;
+      if (typeof app !== 'function') throw new Error('Compiled Express app was not found.');
+      return app;
+    });
   }
   return localAppPromise;
 }
