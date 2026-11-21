@@ -25,6 +25,7 @@ interface ApiResponse {
   status(code: number): ApiResponse;
   setHeader(name: string, value: string | string[]): void;
   end(body?: unknown): void;
+  once?(event: string, listener: () => void): void;
 }
 
 const HOP_BY_HOP = new Set([
@@ -54,6 +55,38 @@ function normalizeUrl(incoming: string): string {
   if (incoming.startsWith('/api')) return incoming;
   const suffix = incoming.startsWith('/') ? incoming : `/${incoming}`;
   return `/api${suffix}`;
+}
+
+/**
+ * Express's app() dispatches middleware but returns immediately. On Vercel the
+ * invocation is considered complete when the handler promise resolves, so we
+ * must wait for the response to actually finish before resolving.
+ */
+function runLocalApp(app: any, req: ApiRequest, res: ApiResponse): Promise<void> {
+  return new Promise<void>((resolve, reject) => {
+    let settled = false;
+    const finish = () => {
+      if (settled) return;
+      settled = true;
+      resolve();
+    };
+    const fail = (error: unknown) => {
+      if (settled) return;
+      settled = true;
+      reject(error);
+    };
+
+    res.once?.('finish', finish);
+    res.once?.('close', finish);
+
+    try {
+      app(req, res, (error?: unknown) => {
+        if (error) fail(error);
+      });
+    } catch (error) {
+      fail(error);
+    }
+  });
 }
 
 async function proxy(req: ApiRequest, res: ApiResponse): Promise<void> {
@@ -107,7 +140,7 @@ export default async function handler(req: ApiRequest, res: ApiResponse): Promis
   try {
     const app = await localApp();
     req.url = normalizeUrl(req.url || '/');
-    await app(req, res);
+    await runLocalApp(app, req, res);
   } catch (error) {
     console.error('Backend initialization failed:', error);
     res.status(500);
