@@ -168,6 +168,14 @@ async function handler(req: ApiRequest, res: ApiResponse): Promise<void> {
   }
 }
 
-// Vercel writes this file as .js while package.json is CommonJS. Using
-// module.exports keeps the emitted function loadable by the Node runtime.
-module.exports = handler;
+// Vercel writes this file as .js while package.json is CommonJS. Named method
+// exports are required so POST/PUT/DELETE requests reach the same handler.
+module.exports = {
+  GET: handler,
+  HEAD: handler,
+  POST: handler,
+  PUT: handler,
+  PATCH: handler,
+  DELETE: handler,
+  OPTIONS: handler,
+};

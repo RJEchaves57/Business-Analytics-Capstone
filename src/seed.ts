@@ -89,10 +89,10 @@ interface SeedUser {
 
 function seedUsers(): void {
   const users: SeedUser[] = [
-    { username: 'admin', password: 'admin123', full_name: 'Maria Elena Santos', role: 'admin', department: 'Plant Management' },
-    { username: 'manager', password: 'manager123', full_name: 'Kenji Nakamura', role: 'manager', department: 'Operations' },
+    { username: 'admin', password: 'admin123', full_name: 'RJ Echaves', role: 'admin', department: 'Plant Management' },
+    { username: 'manager', password: 'manager123', full_name: 'Grace Andrea Seguros', role: 'manager', department: 'Operations' },
     { username: 'maintenance', password: 'maintenance123', full_name: 'Rodel Bautista', role: 'maintenance', department: 'Maintenance' },
-    { username: 'user', password: 'user123', full_name: 'Grace Villanueva', role: 'user', department: 'Production Floor' },
+    { username: 'user', password: 'user123', full_name: 'Nicole Lauron', role: 'user', department: 'Production Floor' },
   ];
   for (const user of users) {
     ins('users', {
