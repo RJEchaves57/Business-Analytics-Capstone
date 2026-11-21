@@ -15,5 +15,5 @@
     "skipLibCheck": true,
     "isolatedModules": true
   },
-  "include": ["client/src", "server.ts", "src", "vite.config.mts"]
+  "include": ["client/src", "api", "server.ts", "src", "vite.config.mts"]
 }

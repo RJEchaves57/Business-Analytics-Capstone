@@ -188,3 +188,18 @@ Uploaded files are not used; all document output is generated in the browser (pr
 ## Printing and exports
 
 Report pages include a print header and footer from the company settings. Use the **Print** button for the browser print dialog and **Export CSV** for a spreadsheet-ready download. Receiving a purchase order writes inventory and ledger entries; exporting or printing never changes data.
+
+## Vercel deployment
+
+Vercel hosts the **React frontend only**. The Express/SQLite backend is kept intact and runs on a normal Node host (Render, Railway, VPS, etc.). This avoids the common conflict where Vercel tries to treat the Express server as a static app or expects a persistent local SQLite file.
+
+`vercel.json` builds with `npm run build:web` and outputs `dist/`. The file `api/[...path].ts` is a thin proxy: the browser still calls same-origin `/api/...`, and the proxy forwards each request to `${BACKEND_URL}/api/...`. Cookies are passed through, so sessions work without CORS changes.
+
+Steps:
+
+1. Deploy the backend unchanged on a Node host: `npm ci`, `npm run build:server`, `npm start` (set `HOST=0.0.0.0` and `PORT` as required). Note its public URL, for example `https://makoto-api.onrender.com`.
+2. In the Vercel project, add an environment variable named `BACKEND_URL` with that base URL. Do **not** include `/api`.
+3. Deploy the frontend from this repo. Vercel uses `npm run build:web` automatically.
+4. Open the Vercel URL, sign in with any of the demo accounts, and confirm the dashboard loads.
+
+Local development is unchanged: `npm run dev` still starts Express on port 3000 and Vite proxies `/api` to it.
