@@ -9,6 +9,11 @@
  * Vercel builds only the React app; the Express backend is never removed.
  */
 
+// Vercel ignores an `env` block in vercel.json, so set the writable root here
+// before the database module is imported. Otherwise SQLite tries to write to
+// the read-only deployment directory and the function fails at startup.
+process.env.MAKOTO_ROOT ||= '/tmp';
+
 interface ApiRequest {
   url?: string;
   method?: string;
@@ -99,7 +104,18 @@ export default async function handler(req: ApiRequest, res: ApiResponse): Promis
     return;
   }
 
-  const app = await localApp();
-  req.url = normalizeUrl(req.url || '/');
-  await app(req, res);
+  try {
+    const app = await localApp();
+    req.url = normalizeUrl(req.url || '/');
+    await app(req, res);
+  } catch (error) {
+    console.error('Backend initialization failed:', error);
+    res.status(500);
+    res.setHeader('content-type', 'application/json');
+    res.end(
+      JSON.stringify({
+        error: error instanceof Error ? error.message : 'Backend failed to initialize.',
+      })
+    );
+  }
 }
