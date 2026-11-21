@@ -132,6 +132,14 @@ async function proxy(req: ApiRequest, res: ApiResponse): Promise<void> {
 }
 
 export default async function handler(req: ApiRequest, res: ApiResponse): Promise<void> {
+  const path = req.url || '/';
+  if (path === '/api/health' || path === '/health') {
+    res.status(200);
+    res.setHeader('content-type', 'application/json');
+    res.end(JSON.stringify({ ok: true, node: process.version, root: process.env.MAKOTO_ROOT || null }));
+    return;
+  }
+
   if (process.env.BACKEND_URL) {
     await proxy(req, res);
     return;
